@@ -90,6 +90,29 @@
   </div>
 </div>
 
+
+<!-- MODAL TOKEN GITHUB -->
+<div id="token-backdrop" class="modal-backdrop">
+  <div class="modal-box" style="max-width:380px">
+    <div class="p-6 flex flex-col items-center gap-5 text-center">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl" style="background:linear-gradient(135deg,#1E291B,#2E5A36)">🔑</div>
+      <div>
+        <h2 class="text-lg font-bold text-brand-900">Token de GitHub</h2>
+        <p class="text-sm text-gray-400 mt-1">Solo se pide una vez. Se guarda en este dispositivo.</p>
+      </div>
+      <div class="w-full">
+        <input id="token-input" type="password" class="form-input text-sm" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
+      </div>
+      <p id="token-error" class="text-sm text-red-500 font-semibold hidden -mt-2">❌ Token inválido, intenta de nuevo</p>
+      <p class="text-xs text-gray-400 bg-gray-50 rounded-xl p-3 w-full text-left">💡 Ve a <strong>github.com → Settings → Developer settings → Personal access tokens</strong> y crea uno con permiso <strong>repo</strong>.</p>
+      <div class="flex gap-3 w-full">
+        <button id="token-cancel" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold text-sm">Cancelar</button>
+        <button id="token-confirm" class="flex-1 py-3 rounded-xl font-bold text-white text-sm" style="background:linear-gradient(135deg,#1E291B,#2E5A36)">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL PRODUCTO -->
 <div id="modal-backdrop" class="modal-backdrop">
   <div class="modal-box">
@@ -230,9 +253,14 @@
       <h2 class="text-2xl font-bold text-brand-800">Panel de Administración</h2>
       <p class="text-sm text-gray-400 mt-1">Gestiona el inventario de Chuchipanda Wifi Park</p>
     </div>
-    <button id="open-add-modal" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white text-sm hover:opacity-90 active:scale-95 self-start" style="background:linear-gradient(135deg,#2E5A36,#4E9B5A)">
-      <i data-lucide="plus" class="w-4 h-4"></i> Agregar Producto
-    </button>
+    <div class="flex gap-2 flex-wrap">
+      <button id="open-add-modal" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white text-sm hover:opacity-90 active:scale-95" style="background:linear-gradient(135deg,#2E5A36,#4E9B5A)">
+        <i data-lucide="plus" class="w-4 h-4"></i> Agregar Producto
+      </button>
+      <button id="open-token-modal" class="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm border-2 border-brand-200 text-brand-700 hover:border-brand-400 bg-white">
+        <i data-lucide="key" class="w-4 h-4"></i> Token
+      </button>
+    </div>
   </div>
 
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
@@ -271,14 +299,17 @@
    Backend: GitHub (sin Google, funciona en Cuba)
    Fotos: Base64 comprimido (sin servicios externos)
 ══════════════════════════════════════════ */
-/* ── Configuración ──────────────────────────────────────────────────────────
-   El token de GitHub NO está aquí. Vive como secreto en el Cloudflare Worker.
-   Solo cambia WORKER_URL con la URL que te dio Cloudflare al desplegar.
+/* ── Configuración ───────────────────────────────────────────────────────
+   El token de GitHub se guarda en el dispositivo del admin (localStorage).
+   Nunca aparece en el código. La primera vez el admin lo ingresa manualmente.
 ────────────────────────────────────────────────────────────────────────── */
-const GH_REPO    = "joseitoramirez/panda.menu";
-const GH_FILE    = "products.json";
-const GH_RAW     = `https://raw.githubusercontent.com/${GH_REPO}/main/${GH_FILE}`;
-const WORKER_URL = "https://panda-menu.jos09mirez.workers.dev";
+const GH_REPO  = "joseitoramirez/panda.menu";
+const GH_FILE  = "products.json";
+const GH_RAW   = `https://raw.githubusercontent.com/${GH_REPO}/main/${GH_FILE}`;
+const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+function getToken(){ return localStorage.getItem("gh_token_panda")||""; }
+function saveToken(t){ localStorage.setItem("gh_token_panda",t.trim()); }
+function clearToken(){ localStorage.removeItem("gh_token_panda"); }
 const ADMIN_PASS = "admin123";
 
 /* ══════ ESTADO ══════ */
@@ -323,14 +354,29 @@ async function ghLoad(){
 }
 
 async function ghSave(products, msg="Actualizar menú"){
+  const token = getToken();
+  if(!token){ showTokenModal(); throw new Error("Token no configurado"); }
   setBanner("warn","⏳ Guardando en GitHub...");
-  const r=await fetch(WORKER_URL,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({products,message:msg})
-  });
-  const data=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(data.error||`Error ${r.status}`);
+  const heads = { "Authorization":`token ${token}`, "Accept":"application/vnd.github.v3+json", "Content-Type":"application/json" };
+  let sha;
+  try{
+    const r=await fetch(GH_API,{headers:heads});
+    if(r.ok){ const d=await r.json(); sha=d.sha; }
+  }catch(_){}
+  const body={
+    message:msg,
+    content:btoa(unescape(encodeURIComponent(JSON.stringify(products,null,2)))),
+    ...(sha?{sha}:{})
+  };
+  const r=await fetch(GH_API,{method:"PUT",headers:heads,body:JSON.stringify(body)});
+  if(!r.ok){
+    const e=await r.json().catch(()=>({}));
+    const code=r.status;
+    if(code===401){ clearToken(); showTokenModal(); throw new Error("Token inválido — ingresa uno nuevo"); }
+    if(code===403) throw new Error("Sin permisos (403)");
+    if(code===404) throw new Error("Repositorio no encontrado (404)");
+    throw new Error(`GitHub ${code}: ${e.message||r.statusText}`);
+  }
   setBanner("ok","✅ Guardado correctamente — visible en ~30 segundos");
   setTimeout(hideBanner,5000);
 }
@@ -503,7 +549,8 @@ document.getElementById("open-add-modal").addEventListener("click",()=>openModal
 document.getElementById("modal-close").addEventListener("click",closeModal);
 document.getElementById("modal-cancel").addEventListener("click",closeModal);
 document.getElementById("modal-backdrop").addEventListener("click",e=>{if(e.target===document.getElementById("modal-backdrop"))closeModal();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closePinModal();}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closePinModal();closeTokenModal();}});
+document.getElementById("open-token-modal").addEventListener("click",showTokenModal);
 
 /* ══════════════════════════════════════════
    FOTOS — COMPRESIÓN BASE64 LOCAL
@@ -643,6 +690,30 @@ document.getElementById("btn-print-qr").addEventListener("click",()=>{
 /* ══════════════════════════════════════════
    INICIO
 ══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   MODAL TOKEN GITHUB
+══════════════════════════════════════════ */
+function showTokenModal(){
+  document.getElementById("token-input").value="";
+  document.getElementById("token-error").classList.add("hidden");
+  document.getElementById("token-backdrop").classList.add("open");
+  setTimeout(()=>document.getElementById("token-input").focus(),320);
+}
+function closeTokenModal(){ document.getElementById("token-backdrop").classList.remove("open"); }
+function confirmToken(){
+  const val=document.getElementById("token-input").value.trim();
+  if(!val||val.length<10){
+    document.getElementById("token-error").classList.remove("hidden"); return;
+  }
+  saveToken(val);
+  closeTokenModal();
+  showToast("✅ Token guardado en este dispositivo");
+}
+document.getElementById("token-confirm").addEventListener("click",confirmToken);
+document.getElementById("token-cancel").addEventListener("click",closeTokenModal);
+document.getElementById("token-input").addEventListener("keydown",e=>{ if(e.key==="Enter") confirmToken(); });
+
 document.addEventListener("DOMContentLoaded",async()=>{
   if(window.lucide) lucide.createIcons();
   document.getElementById("view-indicator").classList.remove("hidden");

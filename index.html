@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chuchipanda Wifi Park – Menú Digital</title>
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:300,400,500,600,700,800|fraunces:300,400,500,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.383.0/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    tailwind.config={theme:{extend:{fontFamily:{sans:['"Plus Jakarta Sans"','system-ui','sans-serif'],display:['Fraunces','Georgia','serif']},colors:{brand:{900:'#0F1A0D',800:'#1E291B',700:'#2A3D27',600:'#2E5A36',500:'#3A7244',400:'#4E9B5A',300:'#7EC88A',200:'#B4E5BB',100:'#E8F7EA',50:'#F4FAF5'}}}}}
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F8FAFC;color:#1E291B;min-height:100vh;-webkit-font-smoothing:antialiased}
+    .hide-scroll{-ms-overflow-style:none;scrollbar-width:none}
+    .hide-scroll::-webkit-scrollbar{display:none}
+    .hero-banner{background:linear-gradient(135deg,#0F1A0D 0%,#1E291B 40%,#2E5A36 80%,#3A7244 100%);position:relative;overflow:hidden}
+    .hero-banner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234E9B5A' fill-opacity='0.07'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/svg%3E")}
+    .hero-banner::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:40px;background:#F8FAFC;clip-path:ellipse(55% 100% at 50% 100%)}
+    .cat-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:9999px;font-size:.875rem;font-weight:600;background:white;border:2px solid #e2e8f0;color:#64748b;cursor:pointer;white-space:nowrap;transition:all .22s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 4px rgba(30,41,27,.06)}
+    .cat-pill:hover{border-color:#2E5A36;color:#2E5A36;transform:translateY(-1px)}
+    .cat-pill.active{background:#2E5A36;border-color:#2E5A36;color:white;box-shadow:0 4px 16px rgba(46,90,54,.35)}
+    .product-card{background:white;border-radius:1rem;box-shadow:0 2px 16px rgba(30,41,27,.08),0 0 0 1px rgba(30,41,27,.04);overflow:hidden;transition:transform .25s cubic-bezier(.4,0,.2,1),box-shadow .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+    .product-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(30,41,27,.16)}
+    .product-img-wrap{width:100%;aspect-ratio:4/3;overflow:hidden;background:#f1f5f9}
+    .product-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+    .product-card:hover .product-img-wrap img{transform:scale(1.05)}
+    .price-badge{display:inline-block;background:linear-gradient(135deg,#2E5A36,#3A7244);color:white;border-radius:9999px;padding:3px 14px;font-weight:700;font-size:.95rem}
+    .ios-switch{position:relative;display:inline-block;width:50px;height:28px}
+    .ios-switch input{opacity:0;width:0;height:0}
+    .ios-slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:9999px;transition:background .25s}
+    .ios-slider::before{content:'';position:absolute;height:22px;width:22px;left:3px;bottom:3px;background:white;border-radius:50%;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 6px rgba(0,0,0,.2)}
+    .ios-switch input:checked+.ios-slider{background:#2E5A36}
+    .ios-switch input:checked+.ios-slider::before{transform:translateX(22px)}
+    .modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(15,26,13,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .3s}
+    .modal-backdrop.open{opacity:1;pointer-events:all}
+    .modal-box{background:white;border-radius:1.25rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(15,26,13,.28);transform:translateY(20px) scale(.97);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+    .modal-backdrop.open .modal-box{transform:translateY(0) scale(1)}
+    .form-input{width:100%;border:2px solid #e2e8f0;border-radius:.75rem;padding:10px 14px;font-size:.95rem;font-family:'Plus Jakarta Sans',system-ui,sans-serif;transition:border-color .2s,box-shadow .2s;outline:none;background:#fafafa}
+    .form-input:focus{border-color:#2E5A36;box-shadow:0 0 0 3px rgba(46,90,54,.12);background:white}
+    .form-label{font-size:.85rem;font-weight:600;color:#374151;margin-bottom:5px;display:block}
+    .admin-card{background:white;border-radius:1rem;border:2px solid #f1f5f9;box-shadow:0 2px 8px rgba(30,41,27,.06);transition:border-color .2s}
+    .admin-card:hover{border-color:#b4e5bb}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1E291B;color:white;padding:12px 24px;border-radius:9999px;font-weight:600;font-size:.9rem;z-index:9999;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 8px 32px rgba(15,26,13,.3);max-width:90vw;text-align:center}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .skeleton{background:linear-gradient(90deg,#f1f5f9 25%,#e8f0e9 50%,#f1f5f9 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:.5rem}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    @keyframes cardIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .card-enter{animation:cardIn .38s cubic-bezier(.4,0,.2,1) both}
+    .wifi-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px);border-radius:9999px;padding:5px 14px;font-size:.78rem;font-weight:600;color:white;letter-spacing:.04em}
+    @media print{body>*:not(#print-qr-area){display:none!important}#print-qr-area{display:flex!important;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px}#print-qr-area h2{font-size:22px;color:#1E291B;font-weight:700}}
+    #print-qr-area{display:none}
+  </style>
+</head>
+<body>
+
+<div id="print-qr-area">
+  <h2>📡 Chuchipanda Wifi Park</h2>
+  <div id="qrcode-print"></div>
+  <p id="print-url" style="font-size:11px;color:#94a3b8;word-break:break-all;margin-top:8px"></p>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- MODAL PIN -->
+<div id="pin-backdrop" class="modal-backdrop">
+  <div class="modal-box" style="max-width:360px">
+    <div class="p-6 flex flex-col items-center gap-5 text-center">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl" style="background:linear-gradient(135deg,#1E291B,#2E5A36)">🔐</div>
+      <div>
+        <h2 class="text-lg font-bold text-brand-900">Acceso Administrador</h2>
+        <p class="text-sm text-gray-400 mt-1">Ingresa la contraseña para continuar</p>
+      </div>
+      <div class="w-full relative">
+        <input id="pin-input" type="password" class="form-input text-center text-lg tracking-widest pr-12" placeholder="••••••••" maxlength="30"/>
+        <button id="pin-toggle" type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabindex="-1">
+          <i data-lucide="eye" class="w-5 h-5" id="pin-eye"></i>
+        </button>
+      </div>
+      <p id="pin-error" class="text-sm text-red-500 font-semibold hidden -mt-2">❌ Contraseña incorrecta</p>
+      <div class="flex gap-3 w-full">
+        <button id="pin-cancel" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold text-sm">Cancelar</button>
+        <button id="pin-confirm" class="flex-1 py-3 rounded-xl font-bold text-white text-sm" style="background:linear-gradient(135deg,#1E291B,#2E5A36)">Entrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUCTO -->
+<div id="modal-backdrop" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="flex items-center justify-between p-5 border-b border-gray-100">
+      <div>
+        <h2 id="modal-title" class="text-lg font-bold text-brand-800">Agregar Producto</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Completa los campos para continuar</p>
+      </div>
+      <button id="modal-close" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100">
+        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+      </button>
+    </div>
+    <form id="product-form" class="p-5 flex flex-col gap-4" onsubmit="return false">
+      <input type="hidden" id="form-id"/>
+      <div>
+        <label class="form-label">Nombre *</label>
+        <input class="form-input" id="form-name" type="text" placeholder="Ej: Limonada Natural" required/>
+      </div>
+      <div>
+        <label class="form-label">Categoría *</label>
+        <select class="form-input" id="form-category" required>
+          <option value="">— Selecciona —</option>
+          <option value="Bebidas">🥤 Bebidas</option>
+          <option value="Sándwiches">🥪 Sándwiches</option>
+          <option value="Snacks">🍿 Snacks</option>
+          <option value="Caramelos">🍬 Caramelos</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Precio *</label>
+        <input class="form-input" id="form-price" type="number" step="0.10" min="0" placeholder="Ej: 3.50" required/>
+      </div>
+      <div>
+        <label class="form-label">Foto del Producto *</label>
+        <div id="upload-area" class="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-all" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" accept="image/*" class="hidden"/>
+          <div id="upload-idle">
+            <div class="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center mx-auto mb-2">
+              <i data-lucide="image-plus" class="w-6 h-6 text-brand-500"></i>
+            </div>
+            <p class="text-sm font-semibold text-brand-700">Toca para elegir una foto</p>
+            <p class="text-xs text-gray-400 mt-0.5">Desde tu galería o cámara</p>
+          </div>
+          <div id="upload-loading" class="hidden flex-col items-center gap-2">
+            <div class="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto"></div>
+            <p class="text-sm font-semibold text-brand-700">Procesando imagen...</p>
+          </div>
+          <div id="upload-done" class="hidden">
+            <div class="w-full h-32 rounded-lg overflow-hidden">
+              <img id="img-preview" src="" alt="Vista previa" class="w-full h-full object-cover"/>
+            </div>
+            <p class="text-xs text-green-600 font-semibold mt-2">✅ Imagen lista · Toca para cambiar</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Descripción</label>
+        <textarea class="form-input resize-none" id="form-desc" rows="3" placeholder="Ingredientes, detalles..."></textarea>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="modal-cancel" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-semibold">Cancelar</button>
+        <button type="submit" id="modal-submit" class="flex-1 py-3 rounded-xl font-bold text-white" style="background:linear-gradient(135deg,#2E5A36,#3A7244)">
+          <span id="modal-submit-text">Guardar</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-50 w-full" style="background:rgba(248,250,252,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(30,41,27,0.08)">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background:linear-gradient(135deg,#1E291B,#2E5A36)">🐼</div>
+      <div>
+        <p class="font-display font-semibold text-brand-800 leading-tight text-sm">Chuchipanda</p>
+        <p class="text-xs text-brand-500 font-medium leading-tight">Wifi Park</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div id="view-indicator" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-brand-600 bg-brand-50 px-3 py-1.5 rounded-full border border-brand-200">
+        <i data-lucide="users" class="w-3.5 h-3.5"></i>
+        <span id="view-indicator-text">Vista Cliente</span>
+      </div>
+      <button id="toggle-view-btn" class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white border-2 border-transparent" style="background:linear-gradient(135deg,#1E291B,#2E5A36)">
+        <i data-lucide="settings" class="w-4 h-4" id="toggle-icon"></i>
+        <span id="toggle-text">Panel Admin</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- VISTA CLIENTE -->
+<div id="client-view">
+  <div class="hero-banner pt-10 pb-16 px-4 relative">
+    <div class="max-w-2xl mx-auto text-center relative z-10">
+      <div class="wifi-badge mb-4 mx-auto w-fit"><i data-lucide="wifi" class="w-3.5 h-3.5"></i> Wifi Park · Menú Digital</div>
+      <h1 class="font-display text-4xl sm:text-5xl font-bold text-white leading-tight mb-2">Chuchipanda<br/><em class="font-light">Wifi Park</em></h1>
+      <p class="text-brand-200 text-base font-medium mt-3">Snacks, bebidas y más · Todo fresco para ti 🌿</p>
+    </div>
+  </div>
+  <div class="max-w-5xl mx-auto px-4 py-5">
+    <div id="category-bar" class="flex gap-2.5 overflow-x-auto hide-scroll pb-1">
+      <button class="cat-pill active" data-cat="Todos">✨ Todos</button>
+      <button class="cat-pill" data-cat="Bebidas">🥤 Bebidas</button>
+      <button class="cat-pill" data-cat="Sándwiches">🥪 Sándwiches</button>
+      <button class="cat-pill" data-cat="Snacks">🍿 Snacks</button>
+      <button class="cat-pill" data-cat="Caramelos">🍬 Caramelos</button>
+    </div>
+  </div>
+  <div class="max-w-5xl mx-auto px-4 pb-16">
+    <div class="mb-5">
+      <h2 id="section-title" class="text-xl font-bold text-brand-800">Todos los productos</h2>
+      <p id="section-count" class="text-sm text-gray-400 mt-0.5"></p>
+    </div>
+    <div id="skeleton-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div class="product-card"><div class="product-img-wrap skeleton"></div><div class="p-3 flex flex-col gap-2"><div class="skeleton h-4 w-3/4"></div><div class="skeleton h-3 w-1/2"></div><div class="skeleton h-6 w-1/3 rounded-full"></div></div></div>
+      <div class="product-card"><div class="product-img-wrap skeleton"></div><div class="p-3 flex flex-col gap-2"><div class="skeleton h-4 w-3/4"></div><div class="skeleton h-3 w-1/2"></div><div class="skeleton h-6 w-1/3 rounded-full"></div></div></div>
+      <div class="product-card hidden sm:block"><div class="product-img-wrap skeleton"></div><div class="p-3 flex flex-col gap-2"><div class="skeleton h-4 w-3/4"></div><div class="skeleton h-3 w-1/2"></div><div class="skeleton h-6 w-1/3 rounded-full"></div></div></div>
+      <div class="product-card hidden lg:block"><div class="product-img-wrap skeleton"></div><div class="p-3 flex flex-col gap-2"><div class="skeleton h-4 w-3/4"></div><div class="skeleton h-3 w-1/2"></div><div class="skeleton h-6 w-1/3 rounded-full"></div></div></div>
+    </div>
+    <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 hidden"></div>
+    <div id="empty-state" class="hidden text-center py-20">
+      <div class="text-6xl mb-4">🌿</div>
+      <h3 class="text-lg font-bold text-brand-800 mb-1">Sin productos aquí</h3>
+      <p class="text-gray-400 text-sm">No hay productos en esta categoría.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div id="admin-view" class="hidden max-w-5xl mx-auto px-4 py-8 pb-16">
+  <!-- Banner de estado -->
+  <div id="status-banner" class="hidden mb-4 p-3 rounded-xl text-sm font-semibold flex items-center gap-2"></div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div>
+      <h2 class="text-2xl font-bold text-brand-800">Panel de Administración</h2>
+      <p class="text-sm text-gray-400 mt-1">Gestiona el inventario de Chuchipanda Wifi Park</p>
+    </div>
+    <button id="open-add-modal" class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white text-sm hover:opacity-90 active:scale-95 self-start" style="background:linear-gradient(135deg,#2E5A36,#4E9B5A)">
+      <i data-lucide="plus" class="w-4 h-4"></i> Agregar Producto
+    </button>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+    <div class="admin-card p-4 rounded-xl"><p class="text-xs text-gray-400 font-medium mb-1">Total</p><p id="stat-total" class="text-2xl font-bold text-brand-800">0</p></div>
+    <div class="admin-card p-4 rounded-xl"><p class="text-xs text-gray-400 font-medium mb-1">Disponibles</p><p id="stat-available" class="text-2xl font-bold text-green-600">0</p></div>
+    <div class="admin-card p-4 rounded-xl"><p class="text-xs text-gray-400 font-medium mb-1">Agotados</p><p id="stat-soldout" class="text-2xl font-bold text-red-500">0</p></div>
+    <div class="admin-card p-4 rounded-xl"><p class="text-xs text-gray-400 font-medium mb-1">Categorías</p><p class="text-2xl font-bold text-brand-600">4</p></div>
+  </div>
+
+  <div id="admin-products-list" class="flex flex-col gap-3 mb-10"></div>
+
+  <!-- QR -->
+  <div class="admin-card rounded-2xl p-6 text-center">
+    <div class="flex items-center justify-center gap-2 mb-1">
+      <i data-lucide="qr-code" class="w-5 h-5 text-brand-600"></i>
+      <h3 class="text-base font-bold text-brand-800">Código QR del Menú</h3>
+    </div>
+    <p class="text-xs text-gray-400 mb-5">Imprime este QR para colocarlo en las mesas</p>
+    <div class="flex justify-center mb-4">
+      <div id="qrcode" class="p-3 bg-white rounded-2xl border-2 border-brand-100 inline-block"></div>
+    </div>
+    <p id="qr-url-label" class="text-xs text-gray-400 mb-4 break-all px-4"></p>
+    <button id="btn-print-qr" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-white text-sm hover:opacity-90" style="background:linear-gradient(135deg,#1E291B,#2E5A36)">
+      <i data-lucide="printer" class="w-4 h-4"></i> Imprimir QR
+    </button>
+  </div>
+</div>
+
+<footer id="main-footer" class="border-t border-gray-100 text-center py-6 px-4">
+  <p class="text-xs text-gray-400">© 2025 <span class="font-semibold text-brand-700">Chuchipanda Wifi Park</span> · Menú Digital</p>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════
+   CONFIGURACIÓN
+   Backend: GitHub (sin Google, funciona en Cuba)
+   Fotos: Base64 comprimido (sin servicios externos)
+══════════════════════════════════════════ */
+const GH_TOKEN = "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";
+const GH_REPO  = "joseitoramirez/menu-panda";
+const GH_FILE  = "products.json";
+const GH_RAW   = `https://raw.githubusercontent.com/${GH_REPO}/main/${GH_FILE}`;
+const GH_API   = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+const GH_HEADS = { "Authorization":`token ${GH_TOKEN}`, "Accept":"application/vnd.github.v3+json", "Content-Type":"application/json" };
+const ADMIN_PASS = "admin123";
+
+/* ══════ ESTADO ══════ */
+let allProducts=[], currentCategory="Todos", isAdminView=false, adminUnlocked=false, editingId=null;
+
+/* ══════ UTILS ══════ */
+const fmt  = p => `S/ ${parseFloat(p).toFixed(2)}`;
+const emoji= c => ({Bebidas:"🥤",Sándwiches:"🥪",Snacks:"🍿",Caramelos:"🍬"}[c]||"📦");
+const esc  = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+const PH   = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='150' fill='%23e2e8f0'%3E%3Crect width='200' height='150'/%3E%3Ctext x='50%25' y='50%25' fill='%2394a3b8' text-anchor='middle' dominant-baseline='middle' font-size='36'%3E🍃%3C/text%3E%3C/svg%3E`;
+const genId= ()=> "p_"+Date.now()+"_"+Math.random().toString(36).substr(2,6);
+
+let _tt=null;
+function showToast(msg,ms=3200){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove("show"),ms);
+}
+function setBanner(type,msg){
+  const b=document.getElementById("status-banner");
+  const styles={ok:"background:#DCFCE7;color:#166534",err:"background:#FEE2E2;color:#991B1B",warn:"background:#FEF9C3;color:#854D0E"};
+  b.setAttribute("style",styles[type]||styles.warn);
+  b.textContent=msg; b.classList.remove("hidden");
+}
+function hideBanner(){ document.getElementById("status-banner").classList.add("hidden"); }
+
+/* ══════════════════════════════════════════
+   GITHUB — LEER Y GUARDAR
+══════════════════════════════════════════ */
+async function ghLoad(){
+  try{
+    // Leer desde raw.githubusercontent.com — sin autenticación, funciona en Cuba
+    const r=await fetch(`${GH_RAW}?_=${Date.now()}`);
+    if(r.status===404) return [];
+    if(!r.ok) throw new Error("Error "+r.status);
+    const data=await r.json();
+    return Array.isArray(data)?data:[];
+  }catch(e){
+    console.error("ghLoad:",e);
+    return [];
+  }
+}
+
+async function ghSave(products, msg="Actualizar menú"){
+  setBanner("warn","⏳ Guardando en GitHub...");
+  // Obtener SHA actual del archivo
+  let sha;
+  try{
+    const r=await fetch(GH_API,{headers:GH_HEADS});
+    if(r.ok){ const d=await r.json(); sha=d.sha; }
+  }catch(_){}
+
+  const body={
+    message:msg,
+    content:btoa(unescape(encodeURIComponent(JSON.stringify(products,null,2)))),
+    ...(sha?{sha}:{})
+  };
+
+  const r=await fetch(GH_API,{method:"PUT",headers:GH_HEADS,body:JSON.stringify(body)});
+  if(!r.ok){
+    const e=await r.json().catch(()=>({}));
+    const code=r.status;
+    if(code===401) throw new Error("Token inválido (401)");
+    if(code===403) throw new Error("Sin permisos (403)");
+    if(code===404) throw new Error("Repositorio no encontrado (404)");
+    throw new Error(`GitHub ${code}: ${e.message||r.statusText}`);
+  }
+  setBanner("ok","✅ Guardado correctamente — visible en ~30 segundos");
+  setTimeout(hideBanner,5000);
+}
+
+/* ══════════════════════════════════════════
+   CARGA INICIAL
+══════════════════════════════════════════ */
+async function loadProducts(){
+  allProducts=await ghLoad();
+  document.getElementById("skeleton-grid").classList.add("hidden");
+  document.getElementById("products-grid").classList.remove("hidden");
+  renderClientView();
+  renderAdminView();
+  updateStats();
+}
+
+/* ══════════════════════════════════════════
+   RENDER CLIENTE
+══════════════════════════════════════════ */
+function renderClientView(){
+  const grid=document.getElementById("products-grid"),empty=document.getElementById("empty-state");
+  const visible=allProducts.filter(p=>(currentCategory==="Todos"||p.category===currentCategory)&&p.available!==false);
+  document.getElementById("section-title").textContent=currentCategory==="Todos"?"Todos los productos":`${emoji(currentCategory)} ${currentCategory}`;
+  document.getElementById("section-count").textContent=`${visible.length} producto${visible.length!==1?"s":""} disponible${visible.length!==1?"s":""}`;
+  if(!visible.length){grid.classList.add("hidden");empty.classList.remove("hidden");return;}
+  empty.classList.add("hidden");grid.classList.remove("hidden");
+  grid.innerHTML=visible.map((p,i)=>`
+    <div class="product-card card-enter" style="animation-delay:${i*.05}s">
+      <div class="product-img-wrap"><img src="${esc(p.image||"")}" alt="${esc(p.name)}" loading="lazy" onerror="this.src='${PH}'"/></div>
+      <div class="p-3 flex flex-col flex-1 gap-1.5">
+        <span class="text-[10px] font-semibold text-brand-500 uppercase tracking-widest">${esc(p.category)}</span>
+        <h3 class="font-bold text-brand-900 text-sm leading-snug line-clamp-2">${esc(p.name)}</h3>
+        ${p.desc?`<p class="text-xs text-gray-400 leading-relaxed line-clamp-2">${esc(p.desc)}</p>`:""}
+        <div class="mt-auto pt-1.5"><span class="price-badge">${fmt(p.price)}</span></div>
+      </div>
+    </div>`).join("");
+}
+
+/* ══════════════════════════════════════════
+   RENDER ADMIN
+══════════════════════════════════════════ */
+function renderAdminView(){
+  const list=document.getElementById("admin-products-list");
+  if(!allProducts.length){
+    list.innerHTML=`<div class="text-center py-12 text-gray-400"><div class="text-5xl mb-3">📋</div><p class="font-semibold">Sin productos aún</p><p class="text-sm mt-1">Toca "Agregar Producto" para comenzar.</p></div>`;
+    return;
+  }
+  list.innerHTML=allProducts.map(p=>`
+    <div class="admin-card p-4 flex items-center gap-4" id="row-${p.id}">
+      <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+        <img src="${esc(p.image||"")}" class="w-full h-full object-cover" onerror="this.src='${PH}'"/>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <p class="font-bold text-brand-900 text-sm truncate">${esc(p.name)}</p>
+          <span class="text-[10px] font-semibold text-brand-500 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-100">${esc(p.category)}</span>
+        </div>
+        <p class="text-xs text-gray-400 mt-0.5 truncate">${p.desc?esc(p.desc.substring(0,55))+(p.desc.length>55?"...":""):"Sin descripción"}</p>
+        <p class="text-sm font-bold text-brand-700 mt-1">${fmt(p.price)}</p>
+      </div>
+      <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3 flex-shrink-0">
+        <div class="flex flex-col items-center gap-1">
+          <label class="ios-switch">
+            <input type="checkbox" ${p.available!==false?"checked":""} onchange="toggleStock('${p.id}',this.checked)"/>
+            <span class="ios-slider"></span>
+          </label>
+          <span id="lbl-${p.id}" class="text-[9px] font-semibold ${p.available!==false?"text-green-500":"text-red-400"}">${p.available!==false?"Disponible":"Agotado"}</span>
+        </div>
+        <button onclick="openEditModal('${p.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg border-2 border-gray-200 text-gray-500 hover:border-brand-300 hover:text-brand-600">
+          <i data-lucide="pencil" class="w-4 h-4"></i>
+        </button>
+        <button onclick="deleteProduct('${p.id}')" class="w-8 h-8 flex items-center justify-center rounded-lg border-2 border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-500">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>`).join("");
+  if(window.lucide) lucide.createIcons();
+}
+
+function updateStats(){
+  const tot=allProducts.length,avl=allProducts.filter(p=>p.available!==false).length;
+  document.getElementById("stat-total").textContent=tot;
+  document.getElementById("stat-available").textContent=avl;
+  document.getElementById("stat-soldout").textContent=tot-avl;
+}
+
+/* ══════════════════════════════════════════
+   ACCIONES
+══════════════════════════════════════════ */
+async function toggleStock(id,available){
+  const p=allProducts.find(x=>x.id===id); if(!p) return;
+  p.available=available;
+  try{
+    await ghSave(allProducts,`Stock: ${p.name} → ${available?"disponible":"agotado"}`);
+    const lbl=document.getElementById(`lbl-${id}`);
+    if(lbl){lbl.textContent=available?"Disponible":"Agotado";lbl.className=`text-[9px] font-semibold ${available?"text-green-500":"text-red-400"}`;}
+    renderClientView();updateStats();
+    showToast(available?"✅ Producto activado":"🔴 Marcado como agotado");
+  }catch(e){p.available=!available;showToast("⚠️ "+e.message);}
+}
+
+async function deleteProduct(id){
+  const p=allProducts.find(x=>x.id===id);
+  if(!p||!confirm(`¿Eliminar "${p.name}"?`)) return;
+  allProducts=allProducts.filter(x=>x.id!==id);
+  try{
+    await ghSave(allProducts,`Eliminar: ${p.name}`);
+    renderClientView();renderAdminView();updateStats();
+    showToast(`🗑️ "${p.name}" eliminado`);
+  }catch(e){allProducts.push(p);renderAdminView();showToast("⚠️ "+e.message);}
+}
+
+/* ══════════════════════════════════════════
+   MODAL PRODUCTO
+══════════════════════════════════════════ */
+function openModal(mode="add",id=null){
+  document.getElementById("product-form").reset();
+  document.getElementById("form-id").value="";
+  editingId=null; resetUpload();
+  if(mode==="edit"&&id){
+    const p=allProducts.find(x=>x.id===id); if(!p) return;
+    editingId=id;
+    document.getElementById("modal-title").textContent="Editar Producto";
+    document.getElementById("modal-submit-text").textContent="Actualizar";
+    document.getElementById("form-id").value=p.id;
+    document.getElementById("form-name").value=p.name||"";
+    document.getElementById("form-category").value=p.category||"";
+    document.getElementById("form-price").value=p.price||"";
+    document.getElementById("form-desc").value=p.desc||"";
+    if(p.image){document.getElementById("img-preview").src=p.image;setUpload("done");}
+  }else{
+    document.getElementById("modal-title").textContent="Agregar Producto";
+    document.getElementById("modal-submit-text").textContent="Guardar";
+  }
+  document.getElementById("modal-backdrop").classList.add("open");
+  setTimeout(()=>document.getElementById("form-name").focus(),320);
+  if(window.lucide) lucide.createIcons();
+}
+function openEditModal(id){openModal("edit",id);}
+function closeModal(){document.getElementById("modal-backdrop").classList.remove("open");editingId=null;}
+
+document.getElementById("product-form").addEventListener("submit",async()=>{
+  const name=document.getElementById("form-name").value.trim();
+  const category=document.getElementById("form-category").value;
+  const price=parseFloat(document.getElementById("form-price").value);
+  const desc=document.getElementById("form-desc").value.trim();
+  const image=currentImage;
+  if(!name||!category||isNaN(price)){showToast("⚠️ Completa nombre, categoría y precio");return;}
+  if(!image){showToast("⚠️ Agrega una foto al producto");return;}
+  const btn=document.getElementById("modal-submit");
+  btn.disabled=true;btn.style.opacity=".7";
+  document.getElementById("modal-submit-text").textContent="Guardando…";
+  try{
+    if(editingId){
+      const idx=allProducts.findIndex(p=>p.id===editingId);
+      if(idx!==-1) allProducts[idx]={...allProducts[idx],name,category,price,image,desc};
+      await ghSave(allProducts,`Editar: ${name}`);
+      showToast("✅ Producto actualizado");
+    }else{
+      allProducts.push({id:genId(),name,category,price,image,desc,available:true});
+      await ghSave(allProducts,`Agregar: ${name}`);
+      showToast("✅ Producto agregado");
+    }
+    renderClientView();renderAdminView();updateStats();closeModal();
+  }catch(e){showToast("⚠️ "+e.message);}
+  finally{btn.disabled=false;btn.style.opacity="1";document.getElementById("modal-submit-text").textContent=editingId?"Actualizar":"Guardar";}
+});
+
+document.getElementById("open-add-modal").addEventListener("click",()=>openModal("add"));
+document.getElementById("modal-close").addEventListener("click",closeModal);
+document.getElementById("modal-cancel").addEventListener("click",closeModal);
+document.getElementById("modal-backdrop").addEventListener("click",e=>{if(e.target===document.getElementById("modal-backdrop"))closeModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closePinModal();}});
+
+/* ══════════════════════════════════════════
+   FOTOS — COMPRESIÓN BASE64 LOCAL
+   Sin servicios externos, funciona sin internet
+══════════════════════════════════════════ */
+let currentImage="";
+
+function setUpload(state){
+  document.getElementById("upload-idle").classList.toggle("hidden",state!=="idle");
+  const ld=document.getElementById("upload-loading");
+  ld.classList.toggle("hidden",state!=="loading");
+  ld.classList.toggle("flex",state==="loading");
+  document.getElementById("upload-done").classList.toggle("hidden",state!=="done");
+}
+function resetUpload(){currentImage="";setUpload("idle");document.getElementById("file-input").value="";}
+
+document.getElementById("file-input").addEventListener("change",e=>{
+  const file=e.target.files[0]; if(!file) return;
+  if(file.size>15*1024*1024){showToast("⚠️ Imagen demasiado grande. Máx 15MB");return;}
+  setUpload("loading");
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      // Comprimir a máximo 900px manteniendo proporción
+      const MAX=900;
+      let w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement("canvas");
+      canvas.width=w;canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      // Calidad 0.72 — buen balance tamaño/calidad
+      const b64=canvas.toDataURL("image/jpeg",0.72);
+      currentImage=b64;
+      document.getElementById("img-preview").src=b64;
+      setUpload("done");
+      const kb=Math.round(b64.length*0.75/1024);
+      showToast(`✅ Foto lista (${kb}KB)`);
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ══════════════════════════════════════════
+   CATEGORÍAS
+══════════════════════════════════════════ */
+document.getElementById("category-bar").addEventListener("click",e=>{
+  const pill=e.target.closest(".cat-pill"); if(!pill) return;
+  document.querySelectorAll(".cat-pill").forEach(p=>p.classList.remove("active"));
+  pill.classList.add("active");currentCategory=pill.dataset.cat;renderClientView();
+});
+
+/* ══════════════════════════════════════════
+   PIN ADMIN
+══════════════════════════════════════════ */
+function openPinModal(){
+  document.getElementById("pin-input").value="";
+  document.getElementById("pin-error").classList.add("hidden");
+  document.getElementById("pin-backdrop").classList.add("open");
+  setTimeout(()=>document.getElementById("pin-input").focus(),320);
+  if(window.lucide) lucide.createIcons();
+}
+function closePinModal(){document.getElementById("pin-backdrop").classList.remove("open");}
+function checkPin(){
+  if(document.getElementById("pin-input").value===ADMIN_PASS){
+    adminUnlocked=true;closePinModal();activateAdmin();
+  }else{
+    document.getElementById("pin-error").classList.remove("hidden");
+    const inp=document.getElementById("pin-input");inp.value="";inp.focus();
+    inp.style.borderColor="#ef4444";inp.style.boxShadow="0 0 0 3px rgba(239,68,68,.15)";
+    setTimeout(()=>{inp.style.borderColor="";inp.style.boxShadow="";},1200);
+  }
+}
+document.getElementById("pin-confirm").addEventListener("click",checkPin);
+document.getElementById("pin-cancel").addEventListener("click",()=>{closePinModal();isAdminView=false;});
+document.getElementById("pin-input").addEventListener("keydown",e=>{if(e.key==="Enter")checkPin();});
+document.getElementById("pin-toggle").addEventListener("click",()=>{
+  const inp=document.getElementById("pin-input"),ico=document.getElementById("pin-eye");
+  if(inp.type==="password"){inp.type="text";ico.setAttribute("data-lucide","eye-off");}
+  else{inp.type="password";ico.setAttribute("data-lucide","eye");}
+  if(window.lucide) lucide.createIcons();
+});
+
+/* ══════════════════════════════════════════
+   TOGGLE VISTA
+══════════════════════════════════════════ */
+function activateAdmin(){
+  document.getElementById("client-view").classList.add("hidden");
+  document.getElementById("admin-view").classList.remove("hidden");
+  document.getElementById("main-footer").classList.add("hidden");
+  document.getElementById("toggle-text").textContent="Vista Cliente";
+  document.getElementById("toggle-icon").setAttribute("data-lucide","eye");
+  document.getElementById("view-indicator-text").textContent="Panel Admin";
+  const ind=document.getElementById("view-indicator");
+  ind.style.cssText="background:#FEF2F2;border-color:#FECACA;color:#EF4444";
+  document.getElementById("toggle-view-btn").style.background="linear-gradient(135deg,#7f1d1d,#b91c1c)";
+  renderAdminView();
+  if(window.lucide) lucide.createIcons();
+}
+function deactivateAdmin(){
+  adminUnlocked=false;hideBanner();
+  document.getElementById("client-view").classList.remove("hidden");
+  document.getElementById("admin-view").classList.add("hidden");
+  document.getElementById("main-footer").classList.remove("hidden");
+  document.getElementById("toggle-text").textContent="Panel Admin";
+  document.getElementById("toggle-icon").setAttribute("data-lucide","settings");
+  document.getElementById("view-indicator-text").textContent="Vista Cliente";
+  document.getElementById("view-indicator").style.cssText="";
+  document.getElementById("toggle-view-btn").style.background="linear-gradient(135deg,#1E291B,#2E5A36)";
+  if(window.lucide) lucide.createIcons();
+}
+document.getElementById("toggle-view-btn").addEventListener("click",()=>{
+  if(!isAdminView){isAdminView=true;if(!adminUnlocked)openPinModal();else activateAdmin();}
+  else{isAdminView=false;deactivateAdmin();}
+});
+
+/* ══════════════════════════════════════════
+   QR
+══════════════════════════════════════════ */
+function initQR(){
+  const url=window.location.href;
+  ["qrcode","qrcode-print"].forEach((id,i)=>{
+    document.getElementById(id).innerHTML="";
+    new QRCode(document.getElementById(id),{text:url,width:i?260:180,height:i?260:180,colorDark:"#1E291B",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
+  });
+  document.getElementById("qr-url-label").textContent=url;
+  document.getElementById("print-url").textContent=url;
+}
+document.getElementById("btn-print-qr").addEventListener("click",()=>{
+  document.getElementById("print-qr-area").style.display="flex";
+  window.print();
+  setTimeout(()=>document.getElementById("print-qr-area").style.display="none",500);
+});
+
+/* ══════════════════════════════════════════
+   INICIO
+══════════════════════════════════════════ */
+document.addEventListener("DOMContentLoaded",async()=>{
+  if(window.lucide) lucide.createIcons();
+  document.getElementById("view-indicator").classList.remove("hidden");
+  await loadProducts();
+  initQR();
+});
+</script>
+</body>
+</html>
